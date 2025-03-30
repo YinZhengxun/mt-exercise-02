@@ -54,3 +54,38 @@ python main.py --cuda --emsize 650 --nhid 650 --dropout 0.5 --epochs 40 --tied
 python main.py --cuda --emsize 1500 --nhid 1500 --dropout 0.65 --epochs 40
 python main.py --cuda --emsize 1500 --nhid 1500 --dropout 0.65 --epochs 40 --tied
 ```
+
+###DATASET  EXPERIMENT DESCRIPTION 
+'''
+I. Dataset Description
+For this experiment, we used the Parliament Corpus from the Cornell ConvoKit, which contains real transcripts from British parliamentary debates. The language is formal and grammatically rich, making it a suitable dataset for training a language model.
+
+The original dataset is in .jsonl format. We wrote a preprocessing script extract_parliament.py to extract the "utterance" text field and convert it to plain text.
+
+To balance model quality and training efficiency, we extracted approximately 10,000 text snippets, which were randomly shuffled and split into train.txt, valid.txt, and test.txt stored in the data/parliament_subset/ directory.
+
+
+II. Code Modifications
+Preprocessing Script
+
+Added extract_parliament.py to parse and prepare the text data from utterances.jsonl.
+
+Training Script (main.py)
+
+Modified to accept the custom dataset path (--data data/parliament_subset).
+
+During training, the vocabulary (idx2word) is saved as a vocab.pkl file for use during generation.
+
+Text Generation Script (generate.py)
+
+Added --vocab argument to load the vocabulary file.
+
+The generated output now uses actual words instead of token IDs, using reverse lookup from the vocabulary.
+
+III. Generation Output
+The generated text reflects the formal tone and structure of parliamentary speech. Sample output includes proper use of sentence boundaries, rhetorical phrasing, and named entities like:
+
+"I thank my hon. Friend for his question. It is important that we continue to support local authorities..."
+
+While some sequences are syntactically awkward, the model demonstrates promising coherence given limited data and training epochs.
+

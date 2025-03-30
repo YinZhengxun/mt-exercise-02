@@ -75,6 +75,10 @@ else:
 ###############################################################################
 
 corpus = data.Corpus(args.data)
+#以下三行新增 以保存词表 然后加载回查
+import pickle
+with open('vocab.pkl', 'wb') as f:
+    pickle.dump(corpus.dictionary.idx2word, f)
 
 # Starting from sequential data, batchify arranges the dataset into columns.
 # For instance, with the alphabet as the sequence and batch size 4, we'd get
@@ -241,9 +245,19 @@ except KeyboardInterrupt:
     print('-' * 89)
     print('Exiting from training early')
 
-# Load the best saved model.
-with open(args.save, 'rb') as f:
-    model = torch.load(f)
+## Load the best saved model.
+#with open(args.save, 'rb') as f:
+#    model = torch.load(f)
+
+# 在 PyTorch 2.6+ 中默认启用了 weights_only=True，不允许直接加载带有自定义类的模型，除非你用 safe_globals 显式允许。
+#解决方法（推荐）：替换 torch.load(f) 为支持自定义类的加载方式：
+from torch.serialization import safe_globals
+import model as model_file
+
+with safe_globals({'RNNModel': model_file.RNNModel}):
+    with open(args.save, 'rb') as f:
+        model = torch.load(f, weights_only=False)
+
     # after load the rnn params are not a continuous chunk of memory
     # this makes them a continuous chunk, and will speed up forward pass
     # Currently, only rnn model supports flatten_parameters function.
